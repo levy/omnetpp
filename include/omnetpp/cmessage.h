@@ -641,6 +641,43 @@ class SIM_API cMessage : public cEvent
     //@}
 };
 
+class SIM_API cProgress : public cMessage
+{
+  friend class cPhyModule;
+
+  protected:
+    enum ProgressKind {
+        PACKET_START,
+        PACKET_END,
+        PACKET_PROGRESS
+    };
+
+  protected:
+    cPacket *packet = nullptr;
+    int bitPosition = -1;
+    simtime_t timePosition = -1;
+    int extraProcessableBitLength = 0;
+    simtime_t extraProcessableDuration = 0;
+
+  public:
+    cProgress(const char *name, int kind) : cMessage(name, kind) { }
+
+    cPacket *getPacket() const { return packet; }
+    void setPacket(cPacket *packet) { this->packet = packet; }
+
+    int getBitPosition() const { return bitPosition; }
+    void setBitPosition(int bitPosition) { this->bitPosition = bitPosition; }
+
+    simtime_t getTimePosition() const { return timePosition; }
+    void setTimePosition(simtime_t timePosition) { this->timePosition = timePosition; }
+
+    int getExtraProcessableBitLength() const { return extraProcessableBitLength; }
+    void setExtraProcessableBitLength(int extraProcessableBitLength) { this->extraProcessableBitLength = extraProcessableBitLength; }
+
+    simtime_t getExtraProcessableDuration() const { return extraProcessableDuration; }
+    void setExtraProcessableDuration(simtime_t extraProcessableDuration) { this->extraProcessableDuration = extraProcessableDuration; }
+};
+
 }  // namespace omnetpp
 
 #endif

@@ -694,5 +694,81 @@ unsigned cSimpleModule::getStackUsage() const
     return coroutine ? coroutine->getStackUsage() : 0;
 }
 
+void cPhyModule::sendCompletePacketAtStart(cPacket *packet, cGate *gate, simtime_t duration)
+{
+    packet->setTransmissionStart(true);
+    send(packet, gate, duration);
+}
+
+void cPhyModule::sendCompletePacketAtEnd(cPacket *packet, cGate *gate, simtime_t duration)
+{
+    packet->setTransmissionStart(false);
+    send(packet, gate, duration);
+}
+
+void cPhyModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration)
+{
+    packet->setDuration(duration);
+    sendProgress(packet, gate, 0, cProgress::PACKET_START, 0, 0, 0, 0);
+}
+
+void cPhyModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+{
+    packet->setDuration(duration);
+    sendProgress(packet, gate, 0, cProgress::PACKET_PROGRESS, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+}
+
+void cPhyModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration)
+{
+    packet->setDuration(duration);
+    sendProgress(packet, gate, 0, cProgress::PACKET_END, packet->getBitLength(), packet->getDuration(), 0, 0);
+}
+
+void cPhyModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+{
+    std::string name = packet->getName();
+    switch (progressKind) {
+        case cProgress::PACKET_START: name += "-start"; break;
+        case cProgress::PACKET_END: name += "-end"; break;
+        case cProgress::PACKET_PROGRESS: name += "-progress"; break;
+    }
+    cProgress *progressMessage = new cProgress(name.c_str(), progressKind);
+    progressMessage->setPacket(packet);
+    progressMessage->setBitPosition(bitPosition);
+    progressMessage->setTimePosition(timePosition);
+    progressMessage->setExtraProcessableBitLength(extraProcessableBitLength);
+    progressMessage->setExtraProcessableDuration(extraProcessableDuration);
+    // TODO: sendDirect if wireless?!
+    sendDelayed(progressMessage, delay, gate);
+}
+
+void cPhyModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+{
+    switch (progressKind) {
+        case cProgress::PACKET_START: receivePacketStart(packet); break;
+        case cProgress::PACKET_END: receivePacketEnd(packet); break;
+        case cProgress::PACKET_PROGRESS: receivePacketProgress(packet, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration); break;
+        default: throw cRuntimeError("Unknown progress kind");
+    }
+}
+
+void cPhyModule::receiveFromMedium(cMessage *message)
+{
+    if (message->isPacket()) {
+        auto packet = static_cast<cPacket *>(message);
+        packet->setTransmissionStart(true);
+        if (message->getArrivalGate()->getDeliverOnReceptionStart())
+            receiveCompletePacketAtStart(packet);
+        else
+            receiveCompletePacketAtEnd(packet);
+    }
+    else if (auto progress = dynamic_cast<cProgress *>(message)) {
+        receiveProgress(progress->getPacket(), progress->getArrivalGate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
+        delete progress;
+    }
+    else
+        throw cRuntimeError("Unknown message");
+}
+
 }  // namespace omnetpp
 
