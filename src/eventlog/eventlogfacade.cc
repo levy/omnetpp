@@ -195,6 +195,13 @@ simtime_t EventLogFacade::BeginSendEntry_getTransmissionDelay(ptr_t ptr)
     return beginSendEntry->getEvent()->getTransmissionDelay(beginSendEntry);
 }
 
+bool EventLogFacade::EndSendEntry_isTransmissionStart(ptr_t ptr)
+{
+    END_SEND_ENTRY_PTR(ptr);
+    EndSendEntry *endSendEntry = (EndSendEntry *)ptr;
+    return endSendEntry->isTransmissionStart;
+}
+
 bool EventLogFacade::EndSendEntry_isReceptionStart(ptr_t ptr)
 {
     END_SEND_ENTRY_PTR(ptr);

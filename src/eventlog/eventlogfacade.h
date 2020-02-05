@@ -82,6 +82,7 @@ class EVENTLOG_API EventLogFacade
         bool BeginSendEntry_isSelfMessage(ptr_t ptr);
         ptr_t BeginSendEntry_getEndSendEntry(ptr_t ptr);
         simtime_t BeginSendEntry_getTransmissionDelay(ptr_t ptr);
+        bool EndSendEntry_isTransmissionStart(ptr_t ptr);
         bool EndSendEntry_isReceptionStart(ptr_t ptr);
 
         const char *ModuleCreatedEntry_getModuleFullPath(ptr_t ptr);

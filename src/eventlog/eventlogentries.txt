@@ -133,8 +133,9 @@ BS BeginSendEntry : MessageEntry // beginning to send a message
 
 ES EndSendEntry // prediction of the arrival of a message
 {
-   t simtime_t arrivalTime        // when the message will arrive to its destination module
-   is bool isReceptionStart false // true indicates the message arrives with the first bit
+   t simtime_t arrivalTime          // when the message will arrive to its destination module
+   ts bool isTransmissionStart true // true indicates the message sent with the first bit
+   rs bool isReceptionStart false   // true indicates the message arrives with the first bit
 }
 
 SD SendDirectEntry // sending a message directly to a destination gate

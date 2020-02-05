@@ -479,8 +479,9 @@ void EventlogFileManager::messageSendHop(cMessage *msg, cGate *srcGate, simtime_
 void EventlogFileManager::endSend(cMessage *msg)
 {
     if (isCombinedRecordingEnabled) {
-        bool isStart = msg->isPacket() ? ((cPacket *)msg)->isReceptionStart() : false;
-        EventLogWriter::recordEndSendEntry_t_is(feventlog, msg->getArrivalTime(), isStart);
+        bool isTransmissionStart = msg->isPacket() ? ((cPacket *)msg)->isTransmissionStart() : true;
+        bool isReceptionStart = msg->isPacket() ? ((cPacket *)msg)->isReceptionStart() : true;
+        EventLogWriter::recordEndSendEntry_t_ts_rs(feventlog, msg->getArrivalTime(), isTransmissionStart, isReceptionStart);
         entryIndex++;
     }
 }
