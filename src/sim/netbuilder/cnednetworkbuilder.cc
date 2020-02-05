@@ -36,6 +36,7 @@
 #include "omnetpp/cgate.h"
 #include "omnetpp/cchannel.h"
 #include "omnetpp/cdataratechannel.h"
+#include "omnetpp/ctransmissionchannel.h"
 #include "omnetpp/ccomponenttype.h"
 #include "omnetpp/ccontextswitcher.h"
 #include "omnetpp/cdynamicexpression.h"

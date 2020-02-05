@@ -87,6 +87,7 @@ const char *opp_typename(const std::type_info& t)
 #include "omnetpp/cstringtokenizer.h"
 #include "omnetpp/cxmlelement.h"
 #include "omnetpp/cdelaychannel.h"
+#include "omnetpp/ctransmissionchannel.h"
 #include "omnetpp/cdataratechannel.h"
 #include "omnetpp/cpacketqueue.h"
 #include "omnetpp/cfsm.h"
@@ -130,6 +131,8 @@ void _sim_dummy_func()
     (void)a;
     cDelayChannel dc(nullptr);
     (void)dc;
+    cTransmissionChannel tc(nullptr);
+    (void)tc;
     cDatarateChannel c(nullptr);
     (void)c;
     cPacketQueue pq;

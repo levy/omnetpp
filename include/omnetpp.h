@@ -36,6 +36,7 @@
 #include "omnetpp/cchannel.h"
 #include "omnetpp/cdelaychannel.h"
 #include "omnetpp/cdataratechannel.h"
+#include "omnetpp/ctransmissionchannel.h"
 #include "omnetpp/cconfiguration.h"
 #include "omnetpp/ccoroutine.h"
 #include "omnetpp/cdefaultowner.h"

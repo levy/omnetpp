@@ -231,6 +231,16 @@ class cDelayChannel extends cChannel
     // nothing special
 }
 
+class cTransmissionChannel extends cChannel
+{
+    @existingClass;
+    @overwritePreviousDefinition;
+    @descriptor(readonly);
+    // Note: no need to spell out delay etc, they come from cComponent parameters
+    bool isBusy @getter(isBusy) @group(fields) @hint("If channel is currently transmitting");
+    simtime_t transmissionFinishTime @group(fields) @hint("If busy: when currently active transmissions will finish");
+}
+
 class cDatarateChannel extends cChannel
 {
     @existingClass;

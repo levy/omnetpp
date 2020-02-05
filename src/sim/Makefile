@@ -31,7 +31,7 @@ COPTS=-Wno-unused-function $(CFLAGS) $(INCL_FLAGS)
 IMPLIBS= -loppcommon$D
 
 OBJS_STD=\
-    $O/carray.o $O/cdelaychannel.o $O/cdataratechannel.o $O/cboolparimpl.o $O/cchannel.o \
+    $O/carray.o $O/cdelaychannel.o $O/cdataratechannel.o $O/ctransmissionchannel.o $O/cboolparimpl.o $O/cchannel.o \
     $O/cobjectfactory.o $O/ccomponent.o $O/ccomponenttype.o $O/cconfiguration.o $O/cconfigoption.o \
     $O/ccanvas.o $O/ccoroutine.o $O/cdefaultowner.o $O/cabstracthistogram.o $O/cfutureeventset.o \
     $O/cdisplaystring.o $O/cdoubleparimpl.o $O/cdynamicexpression.o $O/cexpression.o $O/cenvir.o \

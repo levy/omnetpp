@@ -28,6 +28,7 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/globals.h"
 #include "omnetpp/cdelaychannel.h"
+#include "omnetpp/ctransmissionchannel.h"
 #include "omnetpp/cdataratechannel.h"
 #include "omnetpp/cmodelchange.h"
 #include "omnetpp/cproperties.h"
@@ -535,6 +536,11 @@ cIdealChannel *cChannelType::createIdealChannel(const char *name)
 cDelayChannel *cChannelType::createDelayChannel(const char *name)
 {
     return cDelayChannel::create(name);
+}
+
+cTransmissionChannel *cChannelType::createTransmissionChannel(const char *name)
+{
+    return cTransmissionChannel::create(name);
 }
 
 cDatarateChannel *cChannelType::createDatarateChannel(const char *name)

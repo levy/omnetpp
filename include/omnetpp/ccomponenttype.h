@@ -34,6 +34,7 @@ class cProperties;
 class cIdealChannel;
 class cDelayChannel;
 class cDatarateChannel;
+class cTransmissionChannel;
 class cObjectFactory;
 
 
@@ -379,6 +380,11 @@ class SIM_API cChannelType : public cComponentType
      * Creates a DelayChannel via <tt>getDelayChannelType()->create(name)</tt>.
      */
     static cDelayChannel *createDelayChannel(const char *name);
+
+    /**
+     * Creates a DatarateChannel via <tt>getDatarateChannelType()->create(name)</tt>.
+     */
+    static cTransmissionChannel *createTransmissionChannel(const char *name);
 
     /**
      * Creates a DatarateChannel via <tt>getDatarateChannelType()->create(name)</tt>.
