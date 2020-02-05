@@ -53,8 +53,9 @@ class SIM_API cPacket : public cMessage
 {
   private:
     enum {
-        FL_ISRECEPTIONSTART = 8,
-        FL_BITERROR = 16,
+        FL_ISTRANSMISSIONEND = 8,
+        FL_ISRECEPTIONSTART = 16,
+        FL_BITERROR = 32,
     };
 
     int64_t bitLength;    // length of the packet in bits -- used for bit error and transmission delay modeling
@@ -72,6 +73,9 @@ class SIM_API cPacket : public cMessage
   public:
     // internal: sets the message duration; called by channel objects and sendDirect
     void setDuration(simtime_t d) {duration = d;}
+
+    // internal: sets the isTransmissionStart() flag
+    void setTransmissionStart(bool b) {setFlag(FL_ISTRANSMISSIONEND, !b);}
 
     // internal: sets the isReceptionStart() flag
     void setReceptionStart(bool b) {setFlag(FL_ISRECEPTIONSTART, b);}
@@ -286,6 +290,15 @@ class SIM_API cPacket : public cMessage
      * @see isReceptionStart(), getArrivalTime(), cDatarateChannel
      */
     simtime_t_cref getDuration() const {return duration;}
+
+    /**
+     * Tells whether this packet represents the start or the end of the
+     * transmission, provided the packet has nonzero length and it travelled
+     * through a channel with nonzero data rate.
+     *
+     * @see getArrivalTime(), getDuration(), cDatarateChannel
+     */
+    bool isTransmissionStart() const {return !(flags & FL_ISTRANSMISSIONEND);}
 
     /**
      * Tells whether this packet represents the start or the end of the
