@@ -305,7 +305,7 @@ void cSimpleModule::sendDelayed(cMessage *msg, simtime_t delay, int gateId)
     sendDelayed(msg, delay, outGate);
 }
 
-void cSimpleModule::sendDelayed(cMessage *msg, simtime_t delay, cGate *outGate)
+void cSimpleModule::sendDelayed(cMessage *msg, simtime_t delay, cGate *outGate, simtime_t duration)
 {
     // error checking:
     if (outGate == nullptr)
@@ -355,7 +355,7 @@ void cSimpleModule::sendDelayed(cMessage *msg, simtime_t delay, cGate *outGate)
     simtime_t delayEndTime = simTime() + delay;
     msg->setSentFrom(this, outGate->getId(), delayEndTime);
     if (msg->isPacket())
-        ((cPacket *)msg)->setDuration(SIMTIME_ZERO);
+        ((cPacket *)msg)->setDuration(duration);
 
     EVCB.beginSend(msg);
     bool keepMsg = outGate->deliver(msg, delayEndTime);

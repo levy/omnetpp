@@ -208,7 +208,7 @@ class SIM_API cSimpleModule : public cModule //implies noncopyable
     /**
      * Sends a message through the gate given with its pointer.
      */
-    virtual void send(cMessage *msg, cGate *outputgate)  {return sendDelayed(msg, SIMTIME_ZERO, outputgate);}
+    virtual void send(cMessage *msg, cGate *outputgate, simtime_t duration = 0)  {return sendDelayed(msg, SIMTIME_ZERO, outputgate, duration);}
 
     /**
      * Delayed sending. Sends a message through the gate given with
@@ -227,7 +227,7 @@ class SIM_API cSimpleModule : public cModule //implies noncopyable
      * Sends a message through the gate given with its pointer as if
      * it was sent delay seconds later.
      */
-    virtual void sendDelayed(cMessage *msg, simtime_t delay, cGate *outputgate);
+    virtual void sendDelayed(cMessage *msg, simtime_t delay, cGate *outputgate, simtime_t duration = 0);
 
     /**
      * Sends a message directly to another module, with zero propagation delay
