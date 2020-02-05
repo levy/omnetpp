@@ -38,14 +38,12 @@ class SIM_API cTransmissionChannel : public cChannel //implies noncopyable
     enum {
       FL_ISDISABLED = 1 << 10,
       FL_DELAY_NONZERO = 1 << 11,
-      FL_DATARATE_NONZERO = 1 << 12,
       FL_BER_NONZERO = 1 << 13,
       FL_PER_NONZERO = 1 << 14,
     };
 
     // cached values of parameters (note: parameters are non-volatile)
     simtime_t delay; // propagation delay
-    double datarate; // data rate
     double ber;      // bit error rate
     double per;      // packet error rate
 
@@ -111,13 +109,6 @@ class SIM_API cTransmissionChannel : public cChannel //implies noncopyable
     virtual void setDelay(double d);
 
     /**
-     * Sets the data rate of the channel, in bit/second.
-     *
-     * @see isBusy(), getTransmissionFinishTime()
-     */
-    virtual void setDatarate(double d);
-
-    /**
      * Sets the bit error rate (BER) of the channel.
      *
      * @see cPacket::hasBitError()
@@ -141,14 +132,6 @@ class SIM_API cTransmissionChannel : public cChannel //implies noncopyable
      * This method is equivalent to reading the "delay" parameter, via par("delay").
      */
     virtual simtime_t getDelay() const {checkState(); return delay;}
-
-    /**
-     * Returns the data rate of the channel, in bit/second.
-     * This method is equivalent to reading the "datarate" parameter, via par("datarate").
-     * This value affects the transmission time of messages sent through
-     * the channel.
-     */
-    virtual double getDatarate() const  {checkState(); return datarate;}
 
     /**
      * Returns the bit error rate (BER) of the channel.
@@ -179,7 +162,7 @@ class SIM_API cTransmissionChannel : public cChannel //implies noncopyable
     /**
      * Same as getDatarate().
      */
-    virtual double getNominalDatarate() const override {return getDatarate();}
+    virtual double getNominalDatarate() const override {return 0;}
 
     /**
      * Returns the message length in bits divided by the datarate.

@@ -43,7 +43,6 @@ cTransmissionChannel::cTransmissionChannel(const char *name) : cChannel(name)
 {
     txFinishTime = -1;
     delay = 0;
-    datarate = 0;
     ber = 0;
     per = 0;
 }
@@ -82,14 +81,11 @@ void cTransmissionChannel::initialize()
 void cTransmissionChannel::rereadPars()
 {
     delay = par("delay");
-    datarate = par("datarate");
     ber = par("ber");
     per = par("per");
 
     if (delay < SIMTIME_ZERO)
         throw cRuntimeError(this, "Negative delay %s", SIMTIME_STR(delay));
-    if (datarate < 0)
-        throw cRuntimeError(this, "Negative datarate %g", datarate);
     if (ber < 0 || ber > 1)
         throw cRuntimeError(this, "Wrong bit error rate %g", ber);
     if (per < 0 || per > 1)
@@ -97,7 +93,6 @@ void cTransmissionChannel::rereadPars()
 
     setFlag(FL_ISDISABLED, par("disabled"));
     setFlag(FL_DELAY_NONZERO, delay != SIMTIME_ZERO);
-    setFlag(FL_DATARATE_NONZERO, datarate != 0);
     setFlag(FL_BER_NONZERO, ber != 0);
     setFlag(FL_PER_NONZERO, per != 0);
 }
@@ -110,11 +105,6 @@ void cTransmissionChannel::handleParameterChange(const char *)
 void cTransmissionChannel::setDelay(double d)
 {
     par("delay").setDoubleValue(d);
-}
-
-void cTransmissionChannel::setDatarate(double d)
-{
-    par("datarate").setDoubleValue(d);
 }
 
 void cTransmissionChannel::setBitErrorRate(double d)
@@ -134,8 +124,8 @@ void cTransmissionChannel::setDisabled(bool d)
 
 simtime_t cTransmissionChannel::calculateDuration(cMessage *msg) const
 {
-    if ((flags & FL_DATARATE_NONZERO) && msg->isPacket())
-        return ((cPacket *)msg)->getBitLength() / datarate;
+    if (msg->isPacket())
+        return ((cPacket *)msg)->getDuration();
     else
         return SIMTIME_ZERO;
 }
@@ -153,10 +143,8 @@ void cTransmissionChannel::processMessage(cMessage *msg, simtime_t t, result_t& 
 
     // message must not have its duration set already
     bool isPacket = msg->isPacket();
-    if (isPacket && ((cPacket *)msg)->getDuration() != SIMTIME_ZERO)
-        throw cRuntimeError(this, "Packet (%s)%s already has a duration set; there "
-                                  "may be more than one channel with data rate in the connection path, or "
-                                  "it was sent with a sendDirect() call that specified duration as well",
+    if (isPacket && ((cPacket *)msg)->getDuration() == SIMTIME_ZERO)
+        throw cRuntimeError(this, "Packet (%s)%s has no duration set",
                                   msg->getClassName(), msg->getName());
 
     // if channel is disabled, signal that message should be deleted
@@ -172,15 +160,16 @@ void cTransmissionChannel::processMessage(cMessage *msg, simtime_t t, result_t& 
         emit(channelBusySignal, &tmp);
     }
 
-    // datarate modeling
-    if ((flags & FL_DATARATE_NONZERO) && msg->isPacket()) {
+    // duration modeling
+    if (msg->isPacket()) {
         cPacket *pkt = (cPacket *)msg;
-        simtime_t duration = pkt->getBitLength() / datarate;
+        simtime_t duration = pkt->getDuration();
         result.duration = duration;
-        txFinishTime = t + duration;
-        pkt->setDuration(duration);
+        txFinishTime = t + (pkt->isTransmissionStart() ? duration : 0);
     }
     else {
+        if (auto progress = dynamic_cast<cProgress *>(msg))
+            result.duration = progress->getPacket()->getDuration() - progress->getTimePosition();
         txFinishTime = t;
     }
 
