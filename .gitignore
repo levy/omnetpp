@@ -20,6 +20,7 @@
 *.manifest
 *.vci
 *.pyc
+*.out
 .ccls-cache
 .vscode/ipch
 */__pycache__/*
@@ -93,6 +94,9 @@ Thumbs.db
 /samples/histograms/histograms
 /samples/hypercube/hypercube
 /samples/neddemo/neddemo
+/samples/openstreetmap/omnetpp
+/samples/phy/phy
+/samples/petrinets/petrinets
 /samples/queueinglib/queueinglib.lib
 /samples/routing/routing
 /samples/sockets/sockets
@@ -114,6 +118,9 @@ Thumbs.db
 /samples/histograms/histograms_dbg
 /samples/hypercube/hypercube_dbg
 /samples/neddemo/neddemo_dbg
+/samples/openstreetmap/omnetpp_dbg
+/samples/phy/phy_dbg
+/samples/petrinets/petrinets_dbg
 /samples/queueinglib/queueinglib_dbg.lib
 /samples/routing/routing_dbg
 /samples/sockets/sockets_dbg
