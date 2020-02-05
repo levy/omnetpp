@@ -540,11 +540,15 @@ void cSimpleModule::arrived(cMessage *msg, cGate *ongate, simtime_t t)
                             "is earlier than current simulation time",
                             msg->getName(), SIMTIME_STR(t), getFullPath().c_str());
     msg->setArrival(getId(), ongate->getId());
-    bool isStart = ongate->getDeliverOnReceptionStart();
     if (msg->isPacket()) {
         cPacket *pkt = (cPacket *)msg;
-        pkt->setReceptionStart(isStart);
-        pkt->setArrivalTime(isStart ? t : t + pkt->getDuration());
+        bool isTransmissionStart = pkt->isTransmissionStart();
+        bool isReceptionStart = ongate->getDeliverOnReceptionStart();
+        pkt->setReceptionStart(isReceptionStart);
+        if (isTransmissionStart)
+            pkt->setArrivalTime(isReceptionStart ? t : t + pkt->getDuration());
+        else
+            pkt->setArrivalTime(isReceptionStart ? t - pkt->getDuration() : t);
     }
     else {
         msg->setArrivalTime(t);
