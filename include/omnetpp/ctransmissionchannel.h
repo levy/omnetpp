@@ -47,8 +47,11 @@ class SIM_API cTransmissionChannel : public cChannel //implies noncopyable
     double ber;      // bit error rate
     double per;      // packet error rate
 
-    // stores the end of the last transmission; used if there is a datarate
+    // stores the start of the last transmission;
+    simtime_t txStartTime;
+    // stores the end of the last transmission;
     simtime_t txFinishTime;
+    bool inProgress = false;
 
   private:
     // internal: checks whether parameters have been set up

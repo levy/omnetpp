@@ -41,6 +41,7 @@ simsignal_t cTransmissionChannel::messageDiscardedSignal;
 
 cTransmissionChannel::cTransmissionChannel(const char *name) : cChannel(name)
 {
+    txStartTime = -1;
     txFinishTime = -1;
     delay = 0;
     ber = 0;
@@ -132,20 +133,55 @@ simtime_t cTransmissionChannel::calculateDuration(cMessage *msg) const
 
 void cTransmissionChannel::processMessage(cMessage *msg, simtime_t t, result_t& result)
 {
-    // channel must be idle
-    if (txFinishTime > t)
-        throw cRuntimeError("Cannot send message (%s)%s on gate %s: Channel is currently "
-                            "busy with an ongoing transmission -- please rewrite the sender "
-                            "simple module to only send when the previous transmission has "
-                            "already finished, using cGate::getTransmissionFinishTime(), scheduleAt(), "
-                            "and possibly a cQueue for storing messages waiting to be transmitted",
-                msg->getClassName(), msg->getFullName(), getFullPath().c_str());
+    cProgress *progress = nullptr;
+    cPacket *pkt = nullptr;
+    bool isStart = true;
+    bool isEnd = true;
+    simtime_t tStart = t;
+
+    if (msg->isPacket()) {
+        pkt = static_cast<cPacket *>(msg);
+    }
+    else {
+        progress = dynamic_cast<cProgress *>(msg);
+    }
+
+    if (progress) {
+        isStart = progress->getKind() == cProgress::PACKET_START;
+        isEnd = progress->getKind() == cProgress::PACKET_END;
+        if (isStart) {
+            if (inProgress || txFinishTime > t)
+                throw cRuntimeError("Cannot send message (%s)%s on gate %s: Channel is currently "
+                                    "busy with an ongoing transmission -- please rewrite the sender "
+                                    "simple module to only send when the previous transmission has "
+                                    "already finished, using cGate::getTransmissionFinishTime(), scheduleAt(), "
+                                    "and possibly a cQueue for storing messages waiting to be transmitted",
+                        msg->getClassName(), msg->getFullName(), getFullPath().c_str());
+        }
+        else {
+            if (!inProgress)
+                throw cRuntimeError("Cannot send continued cProgress (%s)%s on gate %s: not in progress",
+                        msg->getClassName(), msg->getFullName(), getFullPath().c_str());
+            if (txFinishTime < t)
+                throw cRuntimeError("Cannot send continued cProgress (%s)%s on gate %s: the previous cProgress was finished",
+                        msg->getClassName(), msg->getFullName(), getFullPath().c_str());
+        }
+    }
+    else {
+        // channel must be idle
+        if (inProgress || txFinishTime > t)
+            throw cRuntimeError("Cannot send message (%s)%s on gate %s: Channel is currently "
+                                "busy with an ongoing transmission -- please rewrite the sender "
+                                "simple module to only send when the previous transmission has "
+                                "already finished, using cGate::getTransmissionFinishTime(), scheduleAt(), "
+                                "and possibly a cQueue for storing messages waiting to be transmitted",
+                    msg->getClassName(), msg->getFullName(), getFullPath().c_str());
+    }
 
     // message must not have its duration set already
-    bool isPacket = msg->isPacket();
-    if (isPacket && ((cPacket *)msg)->getDuration() == SIMTIME_ZERO)
+    if (pkt != nullptr && pkt->getDuration() == SIMTIME_ZERO)
         throw cRuntimeError(this, "Packet (%s)%s has no duration set",
-                                  msg->getClassName(), msg->getName());
+                                  pkt->getClassName(), pkt->getName());
 
     // if channel is disabled, signal that message should be deleted
     if (flags & FL_ISDISABLED) {
@@ -155,21 +191,52 @@ void cTransmissionChannel::processMessage(cMessage *msg, simtime_t t, result_t& 
         return;
     }
 
-    if (txFinishTime != -1 && mayHaveListeners(channelBusySignal)) {
+    if (isStart && txFinishTime != -1 && mayHaveListeners(channelBusySignal)) { //FIXME emit 0 only when doesn't have any current progress
         cTimestampedValue tmp(txFinishTime, (intval_t)0);
         emit(channelBusySignal, &tmp);
     }
 
     // duration modeling
-    if (msg->isPacket()) {
-        cPacket *pkt = (cPacket *)msg;
+    if (pkt != nullptr) {
         simtime_t duration = pkt->getDuration();
         result.duration = duration;
-        txFinishTime = t + (pkt->isTransmissionStart() ? duration : 0);
+        simtime_t tEnd;
+        if (pkt->isTransmissionStart()) {
+            tStart = t;
+        }
+        else {
+            tStart = t - duration;
+            if (txFinishTime > tStart)
+                throw cRuntimeError("Cannot send message (%s)%s on gate %s: Channel was currently "
+                                    "busy with an ongoing transmission -- please rewrite the sender "
+                                    "simple module to only send when the previous transmission has "
+                                    "already finished, using cGate::getTransmissionFinishTime(), scheduleAt(), "
+                                    "and possibly a cQueue for storing messages waiting to be transmitted",
+                        msg->getClassName(), msg->getFullName(), getFullPath().c_str());
+            txFinishTime = t;
+        }
+        tEnd = tStart + duration;
+        txStartTime = tStart;
+        txFinishTime = tEnd;
+    }
+    else if (progress) {
+        simtime_t tPos = progress->getTimePosition();
+        simtime_t duration = progress->getPacket()->getDuration();
+        tStart = t - tPos;
+        simtime_t tEnd = tStart + duration;
+        if (!isStart && tStart != txStartTime)
+            throw cRuntimeError("The tx start time changed between cProgress msg");
+        if (duration < tPos)
+            throw cRuntimeError("The timePosition in cProgress msg larger than contained entire cPacket duration");
+        if (tEnd < t)
+            throw cRuntimeError("The calculated tx finish time  smaller current time");
+        result.duration = tEnd - t;
+        txStartTime = tStart;
+        txFinishTime = tEnd;
+        inProgress = (progress->getKind() != cProgress::PACKET_END);
     }
     else {
-        if (auto progress = dynamic_cast<cProgress *>(msg))
-            result.duration = progress->getPacket()->getDuration() - progress->getTimePosition();
+        txStartTime = t;
         txFinishTime = t;
     }
 
@@ -177,15 +244,17 @@ void cTransmissionChannel::processMessage(cMessage *msg, simtime_t t, result_t& 
     result.delay = delay;
 
     // bit error modeling
-    if ((flags & (FL_BER_NONZERO | FL_PER_NONZERO)) && msg->isPacket()) {
-        cPacket *pkt = (cPacket *)msg;
-        if (flags & FL_BER_NONZERO)
-            if (dblrand() < 1.0 - pow(1.0 - ber, (double)pkt->getBitLength()))
-                pkt->setBitError(true);
-
-        if (flags & FL_PER_NONZERO)
-            if (dblrand() < per)
-                pkt->setBitError(true);
+    if (isEnd && (flags & (FL_BER_NONZERO | FL_PER_NONZERO)))
+    {
+        cPacket *epkt = (pkt != nullptr) ? pkt : (progress != nullptr) ? progress->getPacket() : nullptr;
+        if (epkt) {
+            if (flags & FL_BER_NONZERO)
+                if (dblrand() < 1.0 - pow(1.0 - ber, (double)epkt->getBitLength()))
+                    epkt->setBitError(true);
+            if (flags & FL_PER_NONZERO)
+                if (dblrand() < per)
+                    epkt->setBitError(true);
+        }
     }
 
     // emit signals
@@ -193,7 +262,7 @@ void cTransmissionChannel::processMessage(cMessage *msg, simtime_t t, result_t& 
         MessageSentSignalValue tmp(t, msg, &result);
         emit(messageSentSignal, &tmp);
     }
-    if (mayHaveListeners(channelBusySignal)) {
+    if (isEnd && mayHaveListeners(channelBusySignal)) {
         cTimestampedValue tmp(t, (intval_t)1);
         emit(channelBusySignal, &tmp);
     }
