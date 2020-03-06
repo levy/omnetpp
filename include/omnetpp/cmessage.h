@@ -645,7 +645,7 @@ class SIM_API cProgress : public cMessage
 {
   friend class cPhyModule;
 
-  protected:
+  public:
     enum ProgressKind {
         PACKET_START,
         PACKET_END,
