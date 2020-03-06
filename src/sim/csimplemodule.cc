@@ -750,7 +750,12 @@ void cPhyModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind,
 {
     switch (progressKind) {
         case cProgress::PACKET_START: receivePacketStart(packet); break;
-        case cProgress::PACKET_END: receivePacketEnd(packet); break;
+        case cProgress::PACKET_END:
+            // ASSERT(timePosition == packet->getDuration());
+            // packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), progress->getSendingTime() - packet->getDuration());  //TODO
+            // packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), progress->getArrivalTime());  //TODO
+            receivePacketEnd(packet);
+            break;
         case cProgress::PACKET_PROGRESS: receivePacketProgress(packet, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration); break;
         default: throw cRuntimeError("Unknown progress kind");
     }
