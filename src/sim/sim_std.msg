@@ -395,6 +395,19 @@ class cMessage extends cEvent
     //XXX various IDs
 }
 
+class cProgress extends cMessage
+{
+    @existingClass;
+    @overwritePreviousDefinition;
+    @descriptor(readonly);
+    @icon("message");
+    cPacket *progressPacket @getter(getPacket);
+    int bitPosition;
+    simtime_t timePosition;
+    int extraProcessableBitLength;
+    simtime_t extraProcessableDuration;
+}
+
 class cPacket extends cMessage
 {
     @existingClass;
