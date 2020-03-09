@@ -92,7 +92,15 @@ void cTransmissionChannel::rereadPars()
     if (per < 0 || per > 1)
         throw cRuntimeError(this, "Wrong packet error rate %g", per);
 
-    setFlag(FL_ISDISABLED, par("disabled"));
+    bool disabled = par("disabled");
+    if (disabled && !(flags & FL_ISDISABLED) && (txFinishTime != -1)) {
+        cTimestampedValue tmp(txFinishTime, (intval_t)0);
+        emit(channelBusySignal, &tmp);
+        txFinishTime = simTime();
+        inProgress = false;
+    }
+    setFlag(FL_ISDISABLED, disabled);
+
     setFlag(FL_DELAY_NONZERO, delay != SIMTIME_ZERO);
     setFlag(FL_BER_NONZERO, ber != 0);
     setFlag(FL_PER_NONZERO, per != 0);
