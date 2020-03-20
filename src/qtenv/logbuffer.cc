@@ -120,7 +120,9 @@ void LogBuffer::beginSend(cMessage *msg)
 
     // FIXME if last line is "info" then we cannot append to it! create new entry with empty banner?
 
-    Entry *entry = entries.back();
+    Entry *entry = new Entry();
+    entry->simtime = simTime();
+    entries.push_back(entry);
     entry->msgs.push_back(MessageSend());
     MessageSend& msgsend = entry->msgs.back();
     msgsend.msg = nullptr;
