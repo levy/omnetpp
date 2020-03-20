@@ -643,7 +643,7 @@ class SIM_API cMessage : public cEvent
 
 class SIM_API cProgress : public cMessage
 {
-  friend class cPhyModule;
+  friend class cSimpleModule;
 
   public:
     enum ProgressKind {

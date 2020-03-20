@@ -453,10 +453,7 @@ class SIM_API cSimpleModule : public cModule //implies noncopyable
      */
     virtual unsigned getStackUsage() const;
     //@}
-};
 
-class SIM_API cPhyModule : public cSimpleModule
-{
   protected:
     /**
      * Packet ownership is transferred.
@@ -479,17 +476,17 @@ class SIM_API cPhyModule : public cSimpleModule
     /**
      * Packet ownership is not transferred, packet is not modified.
      */
-    virtual void sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration);
+    virtual void sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration, simtime_t delay = 0);
     /**
      * Packet ownership is not transferred, packet is not modified.
      *
      * Packet contents can be used by the receiver up to the current simulation time in terms of bits plus the extraProcessableBitLength.
      */
-    virtual void sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, int bitPosition, simtime_t timePosition, int extraProcessableBitLength = 0, simtime_t extraProcessableDuration = 0);
+    virtual void sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, int bitPosition, simtime_t timePosition, int extraProcessableBitLength = 0, simtime_t extraProcessableDuration = 0, simtime_t delay = 0);
     /**
      * Packet ownership is transferred.
      */
-    virtual void sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration);
+    virtual void sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration, simtime_t delay = 0);
 
     /**
      * Packet ownership is not transferred, packet is not modified.

@@ -698,37 +698,37 @@ unsigned cSimpleModule::getStackUsage() const
     return coroutine ? coroutine->getStackUsage() : 0;
 }
 
-void cPhyModule::sendCompletePacketAtStart(cPacket *packet, cGate *gate, simtime_t duration)
+void cSimpleModule::sendCompletePacketAtStart(cPacket *packet, cGate *gate, simtime_t duration)
 {
     packet->setTransmissionStart(true);
     send(packet, gate, duration);
 }
 
-void cPhyModule::sendCompletePacketAtEnd(cPacket *packet, cGate *gate, simtime_t duration)
+void cSimpleModule::sendCompletePacketAtEnd(cPacket *packet, cGate *gate, simtime_t duration)
 {
     packet->setTransmissionStart(false);
     send(packet, gate, duration);
 }
 
-void cPhyModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration)
+void cSimpleModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration, simtime_t delay)
 {
     packet->setDuration(duration);
-    sendProgress(packet, gate, 0, cProgress::PACKET_START, 0, 0, 0, 0);
+    sendProgress(packet, gate, delay, cProgress::PACKET_START, 0, 0, 0, 0);
 }
 
-void cPhyModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration, simtime_t delay)
 {
     packet->setDuration(duration);
-    sendProgress(packet, gate, 0, cProgress::PACKET_PROGRESS, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+    sendProgress(packet, gate, delay, cProgress::PACKET_PROGRESS, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
 }
 
-void cPhyModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration)
+void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration, simtime_t delay)
 {
     packet->setDuration(duration);
-    sendProgress(packet, gate, 0, cProgress::PACKET_END, packet->getBitLength(), packet->getDuration(), 0, 0);
+    sendProgress(packet, gate, delay, cProgress::PACKET_END, packet->getBitLength(), packet->getDuration(), 0, 0);
 }
 
-void cPhyModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     std::string name = packet->getName();
     switch (progressKind) {
@@ -743,10 +743,13 @@ void cPhyModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int
     progressMessage->setExtraProcessableBitLength(extraProcessableBitLength);
     progressMessage->setExtraProcessableDuration(extraProcessableDuration);
     // TODO: sendDirect if wireless?!
-    sendDelayed(progressMessage, delay, gate);
+    if (gate == nullptr)
+        scheduleAt(simTime() + delay, progressMessage);
+    else
+        sendDelayed(progressMessage, delay, gate);
 }
 
-void cPhyModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void cSimpleModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     switch (progressKind) {
         case cProgress::PACKET_START: receivePacketStart(packet); break;
@@ -761,7 +764,7 @@ void cPhyModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind,
     }
 }
 
-void cPhyModule::receiveFromMedium(cMessage *message)
+void cSimpleModule::receiveFromMedium(cMessage *message)
 {
     if (message->isPacket()) {
         auto packet = static_cast<cPacket *>(message);
