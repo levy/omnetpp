@@ -22,7 +22,7 @@ using namespace omnetpp;
 
 namespace phy {
 
-class CompletePacketStartEnd : public cPhyModule
+class CompletePacketStartEnd : public cSimpleModule
 {
   protected:
     double bitrate = 0;

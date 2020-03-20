@@ -22,7 +22,7 @@ using namespace omnetpp;
 
 namespace phy {
 
-class Mixed : public cPhyModule
+class Mixed : public cSimpleModule
 {
   protected:
     enum Mode {
