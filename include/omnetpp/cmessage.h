@@ -662,6 +662,8 @@ class SIM_API cProgress : public cMessage
   public:
     cProgress(const char *name, int kind) : cMessage(name, kind) { }
 
+    virtual cProgress *dup() const override;
+
     cPacket *getPacket() const { return packet; }
     void setPacket(cPacket *packet) { this->packet = packet; }
 

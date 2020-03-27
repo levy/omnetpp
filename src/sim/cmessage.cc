@@ -354,5 +354,16 @@ void cMessage::execute()
     throw new cRuntimeError("Illegal call to cMessage::execute()");
 }
 
+cProgress *cProgress::dup() const
+{
+    auto dup = new cProgress(*this);
+    dup->setPacket(packet);
+    dup->setBitPosition(bitPosition);
+    dup->setTimePosition(timePosition);
+    dup->setExtraProcessableBitLength(extraProcessableBitLength);
+    dup->setExtraProcessableDuration(extraProcessableDuration);
+    return dup;
+}
+
 }  // namespace omnetpp
 
