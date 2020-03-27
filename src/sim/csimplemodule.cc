@@ -752,14 +752,15 @@ void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, 
 void cSimpleModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     switch (progressKind) {
-        case cProgress::PACKET_START: receivePacketStart(packet); break;
+        case cProgress::PACKET_START:
+            receivePacketStart(packet);
+            break;
         case cProgress::PACKET_END:
-            // ASSERT(timePosition == packet->getDuration());
-            // packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), progress->getSendingTime() - packet->getDuration());  //TODO
-            // packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), progress->getArrivalTime());  //TODO
             receivePacketEnd(packet);
             break;
-        case cProgress::PACKET_PROGRESS: receivePacketProgress(packet, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration); break;
+        case cProgress::PACKET_PROGRESS:
+            receivePacketProgress(packet, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+            break;
         default: throw cRuntimeError("Unknown progress kind");
     }
 }
@@ -775,7 +776,10 @@ void cSimpleModule::receiveFromMedium(cMessage *message)
             receiveCompletePacketAtEnd(packet);
     }
     else if (auto progress = dynamic_cast<cProgress *>(message)) {
-        receiveProgress(progress->getPacket(), progress->getArrivalGate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
+        auto packet = progress->getPacket();
+        packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), -1);
+        packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), -1);
+        receiveProgress(packet, progress->getArrivalGate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
         delete progress;
     }
     else
