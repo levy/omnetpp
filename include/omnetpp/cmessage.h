@@ -659,13 +659,18 @@ class SIM_API cProgress : public cMessage
     int extraProcessableBitLength = 0;
     simtime_t extraProcessableDuration = 0;
 
+  private:
+    void copy(const cProgress& orig);
+
   public:
     cProgress(const char *name, int kind) : cMessage(name, kind) { }
+    cProgress(const cProgress& orig) : cMessage(orig) { copy(orig); }
 
-    virtual cProgress *dup() const override;
+    virtual cProgress *dup() const override { return new cProgress(*this); }
 
-    cPacket *getPacket() const { return packet; }
-    void setPacket(cPacket *packet) { this->packet = packet; }
+    cPacket *getPacket() const;
+    cPacket *removePacket();
+    void setPacket(cPacket *packet);
 
     int getBitPosition() const { return bitPosition; }
     void setBitPosition(int bitPosition) { this->bitPosition = bitPosition; }

@@ -776,7 +776,7 @@ void cSimpleModule::receiveFromMedium(cMessage *message)
             receiveCompletePacketAtEnd(packet);
     }
     else if (auto progress = dynamic_cast<cProgress *>(message)) {
-        auto packet = progress->getPacket();
+        auto packet = progress->removePacket();
         packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), -1);
         packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), -1);
         receiveProgress(packet, progress->getArrivalGate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
