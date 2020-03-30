@@ -401,7 +401,7 @@ class cProgress extends cMessage
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon("message");
-    cPacket *progressPacket @getter(getPacket);
+    cPacket *progressPacket @packetData @getter(getPacket);
     int bitPosition;
     simtime_t timePosition;
     int extraProcessableBitLength;

@@ -122,6 +122,7 @@ void LogBuffer::beginSend(cMessage *msg)
 
     Entry *entry = new Entry();
     entry->simtime = simTime();
+    entry->eventNumber = getSimulation()->getEventNumber();
     entries.push_back(entry);
     entry->msgs.push_back(MessageSend());
     MessageSend& msgsend = entry->msgs.back();

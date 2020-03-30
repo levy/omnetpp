@@ -22,6 +22,7 @@
 #include "omnetpp/cmessage.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/cenvir.h"
+#include "omnetpp/cpacket.h"
 
 #ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
@@ -357,7 +358,7 @@ void cMessage::execute()
 cProgress *cProgress::dup() const
 {
     auto dup = new cProgress(*this);
-    dup->setPacket(packet);
+    dup->setPacket(packet->dup());
     dup->setBitPosition(bitPosition);
     dup->setTimePosition(timePosition);
     dup->setExtraProcessableBitLength(extraProcessableBitLength);
