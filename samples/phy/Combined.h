@@ -51,8 +51,8 @@ class Combined : public cSimpleModule
 
     virtual void receiveCompletePacketAtStart(cPacket *packet) override;
     virtual void receiveCompletePacketAtEnd(cPacket *packet) override;
-    virtual void receivePacketStart(cPacket *packet) override;
-    virtual void receivePacketEnd(cPacket *packet) override;
+    virtual void receivePacketStart(cPacket *packet, cGate *gate, double datarate) override;
+    virtual void receivePacketEnd(cPacket *packet, cGate *gate, double datarate) override;
 
     virtual void startTx(cPacket *packet);
     virtual void endTx();

@@ -84,7 +84,7 @@ void Combined::receiveCompletePacketAtEnd(cPacket *packet)
     sendToUpperLayer(packet);
 }
 
-void Combined::receivePacketStart(cPacket *packet)
+void Combined::receivePacketStart(cPacket *packet, cGate *gate, double datarate)
 {
     take(packet);
     rxPacket = packet;
@@ -92,7 +92,7 @@ void Combined::receivePacketStart(cPacket *packet)
         scheduleCutthroughStart(rxPacket);
 }
 
-void Combined::receivePacketEnd(cPacket *packet)
+void Combined::receivePacketEnd(cPacket *packet, cGate *gate, double datarate)
 {
     if (cutthroughModule == nullptr)
         sendToUpperLayer(packet);
@@ -110,7 +110,7 @@ void Combined::startTx(cPacket *packet)
         if (txPacket != nullptr)
             abortTx();
         txPacket = packet;
-        sendPacketStart(packet, gate("mediumOut"), packet->getDuration());
+        sendPacketStart(packet, gate("mediumOut"), 0, packet->getDuration(), bitrate);
         scheduleTxEnd(packet);
     }
     else {
@@ -125,7 +125,7 @@ void Combined::startTx(cPacket *packet)
 void Combined::endTx()
 {
     if (preemptionEnabled)
-        sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+        sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
     txPacket = nullptr;
 }
 
@@ -136,7 +136,7 @@ void Combined::abortTx()
     int bitLength = bitrate * (simTime() - txEndTimer->getSendingTime()).dbl();
     txPacket->setBitLength(bitLength);
     txPacket->setDuration(calculateDuration(txPacket));
-    sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+    sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
     txPacket = nullptr;
 }
 

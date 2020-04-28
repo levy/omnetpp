@@ -64,12 +64,12 @@ void PacketProgressStartEnd::sendToUpperLayer(cPacket *packet)
     send(packet, gate("upperLayerOut"));
 }
 
-void PacketProgressStartEnd::receivePacketStart(cPacket *packet)
+void PacketProgressStartEnd::receivePacketStart(cPacket *packet, cGate *gate, double datarate)
 {
     startRx(packet);
 }
 
-void PacketProgressStartEnd::receivePacketEnd(cPacket *packet)
+void PacketProgressStartEnd::receivePacketEnd(cPacket *packet, cGate *gate, double datarate)
 {
     endRx(packet);
 }
@@ -84,13 +84,13 @@ void PacketProgressStartEnd::startTx(cPacket *packet)
     }
     packet->setDuration(calculateDuration(txPacket));
     scheduleTxEnd(packet);
-    sendPacketStart(packet, gate("mediumOut"), packet->getDuration());
+    sendPacketStart(packet, gate("mediumOut"), 0, packet->getDuration(), bitrate);
     txPacket = packet;
 }
 
 void PacketProgressStartEnd::endTx()
 {
-    sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+    sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
     txPacket = nullptr;
 }
 
@@ -101,7 +101,7 @@ void PacketProgressStartEnd::abortTx()
     int bitLength = bitrate * (simTime() - txEndTimer->getSendingTime()).dbl();
     txPacket->setBitLength(bitLength);
     txPacket->setDuration(calculateDuration(txPacket));
-    sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+    sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
     txPacket = nullptr;
 }
 

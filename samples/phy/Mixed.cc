@@ -77,19 +77,19 @@ void Mixed::receiveCompletePacketAtEnd(cPacket *packet)
     sendToUpperLayer(packet);
 }
 
-void Mixed::receivePacketStart(cPacket *packet)
+void Mixed::receivePacketStart(cPacket *packet, cGate *gate, double datarate)
 {
     take(packet);
     rxPacket = packet;
 }
 
-void Mixed::receivePacketEnd(cPacket *packet)
+void Mixed::receivePacketEnd(cPacket *packet, cGate *gate, double datarate)
 {
     sendToUpperLayer(packet);
     rxPacket = nullptr;
 }
 
-void Mixed::receivePacketProgress(cPacket *packet, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void Mixed::receivePacketProgress(cPacket *packet, cGate *gate, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     if (timePosition == packet->getDuration() / 2)
         EV_INFO << "Processing middle: packetName " << packet->getName() << std::endl;
@@ -104,7 +104,7 @@ void Mixed::startTx(cPacket *packet)
         if (txPacket != nullptr)
             abortTx();
         txPacket = packet;
-        sendPacketStart(packet, gate("mediumOut"), packet->getDuration());
+        sendPacketStart(packet, gate("mediumOut"), 0, packet->getDuration(), bitrate);
         scheduleTxEnd(packet);
         if (txMode == PACKET_PROGRESS_START_MIDDLE_END)
             scheduleTxMiddle(packet);
@@ -121,7 +121,7 @@ void Mixed::startTx(cPacket *packet)
 
 void Mixed::middleTx()
 {
-    sendPacketProgress(txPacket, gate("mediumOut"), txPacket->getDuration(), txPacket->getBitLength() / 2, txPacket->getDuration() / 2);
+    sendPacketProgress(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate, txPacket->getBitLength() / 2, txPacket->getDuration() / 2);
 }
 
 void Mixed::endTx()
@@ -135,11 +135,11 @@ void Mixed::endTx()
             txMode = PACKET_PROGRESS_START_END;
             break;
         case PACKET_PROGRESS_START_END:
-            sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+            sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
             txMode = PACKET_PROGRESS_START_MIDDLE_END;
             break;
         case PACKET_PROGRESS_START_MIDDLE_END:
-            sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+            sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
             txMode = COMPLETE_PACKET_START;
             break;
     }
@@ -160,7 +160,7 @@ void Mixed::abortTx()
         if (txMode == PACKET_PROGRESS_START_MIDDLE_END)
             cancelEvent(txMiddleTimer);
         cancelEvent(txEndTimer);
-        sendPacketEnd(txPacket, gate("mediumOut"), txPacket->getDuration());
+        sendPacketEnd(txPacket, gate("mediumOut"), 0, txPacket->getDuration(), bitrate);
     }
     else
         throw cRuntimeError("Another packet is already being sent");
