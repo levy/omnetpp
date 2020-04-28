@@ -712,24 +712,22 @@ void cSimpleModule::sendCompletePacketAtEnd(cPacket *packet, cGate *gate, simtim
 
 void cSimpleModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate)
 {
-    packet->setDuration(duration);
-    sendProgress(packet, gate, delay, cProgress::PACKET_START, datarate, 0, 0, 0, 0);
+    sendProgress(packet, gate, delay, duration, cProgress::PACKET_START, datarate, 0, 0, 0, 0);
 }
 
 void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
-    packet->setDuration(duration);
-    sendProgress(packet, gate, delay, cProgress::PACKET_PROGRESS, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+    sendProgress(packet, gate, delay, duration, cProgress::PACKET_PROGRESS, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
 }
 
 void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate)
 {
-    packet->setDuration(duration);
-    sendProgress(packet, gate, delay, cProgress::PACKET_END, datarate, packet->getBitLength(), packet->getDuration(), 0, 0);
+    sendProgress(packet, gate, delay, duration, cProgress::PACKET_END, datarate, packet->getBitLength(), packet->getDuration(), 0, 0);
 }
 
-void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
+    packet->setDuration(duration);
     std::string name = packet->getName();
     switch (progressKind) {
         case cProgress::PACKET_START: name += "-start"; break;

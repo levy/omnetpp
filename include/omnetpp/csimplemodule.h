@@ -501,7 +501,7 @@ class SIM_API cSimpleModule : public cModule //implies noncopyable
      */
     virtual void receivePacketEnd(cPacket *packet, double datarate) { throw cRuntimeError("Invalid operation"); }
 
-    virtual void sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration);
+    virtual void sendProgress(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration);
     virtual void receiveProgress(cPacket *packet, cGate *gate, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration);
 
     virtual void receiveFromMedium(cMessage *message);
