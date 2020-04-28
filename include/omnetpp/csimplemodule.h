@@ -491,15 +491,15 @@ class SIM_API cSimpleModule : public cModule //implies noncopyable
     /**
      * Packet ownership is not transferred, packet is not modified.
      */
-    virtual void receivePacketStart(cPacket *packet, double datarate) { throw cRuntimeError("Invalid operation"); }
+    virtual void receivePacketStart(cPacket *packet, cGate *gate, double datarate) { throw cRuntimeError("Invalid operation"); }
     /**
      * Packet ownership is not transferred, packet is not modified.
      */
-    virtual void receivePacketProgress(cPacket *packet, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration) { throw cRuntimeError("Invalid operation"); }
+    virtual void receivePacketProgress(cPacket *packet, cGate *gate, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration) { throw cRuntimeError("Invalid operation"); }
     /**
      * Packet ownership is transferred.
      */
-    virtual void receivePacketEnd(cPacket *packet, double datarate) { throw cRuntimeError("Invalid operation"); }
+    virtual void receivePacketEnd(cPacket *packet, cGate *gate, double datarate) { throw cRuntimeError("Invalid operation"); }
 
     virtual void sendProgress(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration);
     virtual void receiveProgress(cPacket *packet, cGate *gate, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration);

@@ -752,13 +752,13 @@ void cSimpleModule::receiveProgress(cPacket *packet, cGate *gate, int progressKi
 {
     switch (progressKind) {
         case cProgress::PACKET_START:
-            receivePacketStart(packet, datarate);
+            receivePacketStart(packet, gate, datarate);
             break;
         case cProgress::PACKET_END:
-            receivePacketEnd(packet, datarate);
+            receivePacketEnd(packet, gate, datarate);
             break;
         case cProgress::PACKET_PROGRESS:
-            receivePacketProgress(packet, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+            receivePacketProgress(packet, gate, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
             break;
         default: throw cRuntimeError("Unknown progress kind");
     }
