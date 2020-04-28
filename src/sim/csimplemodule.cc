@@ -710,25 +710,25 @@ void cSimpleModule::sendCompletePacketAtEnd(cPacket *packet, cGate *gate, simtim
     send(packet, gate, duration);
 }
 
-void cSimpleModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration, simtime_t delay)
+void cSimpleModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration, double datarate, simtime_t delay)
 {
     packet->setDuration(duration);
-    sendProgress(packet, gate, delay, cProgress::PACKET_START, 0, 0, 0, 0);
+    sendProgress(packet, gate, delay, cProgress::PACKET_START, datarate, 0, 0, 0, 0);
 }
 
-void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration, simtime_t delay)
+void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration, simtime_t delay)
 {
     packet->setDuration(duration);
-    sendProgress(packet, gate, delay, cProgress::PACKET_PROGRESS, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+    sendProgress(packet, gate, delay, cProgress::PACKET_PROGRESS, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
 }
 
-void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration, simtime_t delay)
+void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration, double datarate, simtime_t delay)
 {
     packet->setDuration(duration);
-    sendProgress(packet, gate, delay, cProgress::PACKET_END, packet->getBitLength(), packet->getDuration(), 0, 0);
+    sendProgress(packet, gate, delay, cProgress::PACKET_END, datarate, packet->getBitLength(), packet->getDuration(), 0, 0);
 }
 
-void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     std::string name = packet->getName();
     switch (progressKind) {
@@ -738,6 +738,7 @@ void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, 
     }
     cProgress *progressMessage = new cProgress(name.c_str(), progressKind);
     progressMessage->setPacket(packet);
+    progressMessage->setDatarate(datarate);
     progressMessage->setBitPosition(bitPosition);
     progressMessage->setTimePosition(timePosition);
     progressMessage->setExtraProcessableBitLength(extraProcessableBitLength);
@@ -749,17 +750,17 @@ void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, 
         sendDelayed(progressMessage, delay, gate);
 }
 
-void cSimpleModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
+void cSimpleModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     switch (progressKind) {
         case cProgress::PACKET_START:
-            receivePacketStart(packet);
+            receivePacketStart(packet, datarate);
             break;
         case cProgress::PACKET_END:
-            receivePacketEnd(packet);
+            receivePacketEnd(packet, datarate);
             break;
         case cProgress::PACKET_PROGRESS:
-            receivePacketProgress(packet, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
+            receivePacketProgress(packet, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
             break;
         default: throw cRuntimeError("Unknown progress kind");
     }
@@ -779,7 +780,7 @@ void cSimpleModule::receiveFromMedium(cMessage *message)
         auto packet = progress->removePacket();
         packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), -1);
         packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), -1);
-        receiveProgress(packet, progress->getArrivalGate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
+        receiveProgress(packet, progress->getArrivalGate(), progress->getDatarate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
         delete progress;
     }
     else

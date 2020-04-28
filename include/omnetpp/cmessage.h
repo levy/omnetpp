@@ -654,6 +654,7 @@ class SIM_API cProgress : public cMessage
 
   protected:
     cPacket *packet = nullptr;
+    double datarate = std::numeric_limits<double>::quiet_NaN();
     int bitPosition = -1;
     simtime_t timePosition = -1;
     int extraProcessableBitLength = 0;
@@ -671,6 +672,9 @@ class SIM_API cProgress : public cMessage
     cPacket *getPacket() const;
     cPacket *removePacket();
     void setPacket(cPacket *packet);
+
+    double getDatarate() const { return datarate; }
+    void setDatarate(double datarate) { this->datarate = datarate; }
 
     int getBitPosition() const { return bitPosition; }
     void setBitPosition(int bitPosition) { this->bitPosition = bitPosition; }
