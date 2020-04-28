@@ -778,7 +778,7 @@ void cSimpleModule::receiveFromMedium(cMessage *message)
         auto packet = progress->removePacket();
         packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), -1);
         packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), -1);
-        receiveProgress(packet, progress->getArrivalGate(), progress->getDatarate(), progress->getKind(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
+        receiveProgress(packet, progress->getArrivalGate(), progress->getKind(), progress->getDatarate(), progress->getBitPosition(), progress->getTimePosition(), progress->getExtraProcessableBitLength(), progress->getExtraProcessableDuration());
         delete progress;
     }
     else
