@@ -1433,8 +1433,11 @@ bool cModule::initializeModules(int stage)
 
     // then recursively initialize submodules
     bool moreStages = stage < numStages-1;
+    std::vector<cModule *> submodules;
     for (SubmoduleIterator it(this); !it.end(); ++it)
-        if ((*it)->initializeModules(stage))
+        submodules.push_back(*it);
+    for (auto submodule : submodules)
+        if (submodule->initializeModules(stage))
             moreStages = true;
 
     // a few more things to do when initialization is complete
