@@ -710,19 +710,19 @@ void cSimpleModule::sendCompletePacketAtEnd(cPacket *packet, cGate *gate, simtim
     send(packet, gate, duration);
 }
 
-void cSimpleModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t duration, double datarate, simtime_t delay)
+void cSimpleModule::sendPacketStart(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate)
 {
     packet->setDuration(duration);
     sendProgress(packet, gate, delay, cProgress::PACKET_START, datarate, 0, 0, 0, 0);
 }
 
-void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t duration, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration, simtime_t delay)
+void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
 {
     packet->setDuration(duration);
     sendProgress(packet, gate, delay, cProgress::PACKET_PROGRESS, datarate, bitPosition, timePosition, extraProcessableBitLength, extraProcessableDuration);
 }
 
-void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t duration, double datarate, simtime_t delay)
+void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate)
 {
     packet->setDuration(duration);
     sendProgress(packet, gate, delay, cProgress::PACKET_END, datarate, packet->getBitLength(), packet->getDuration(), 0, 0);
