@@ -722,7 +722,7 @@ void cSimpleModule::sendPacketProgress(cPacket *packet, cGate *gate, simtime_t d
 
 void cSimpleModule::sendPacketEnd(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, double datarate)
 {
-    sendProgress(packet, gate, delay, duration, cProgress::PACKET_END, datarate, packet->getBitLength(), packet->getDuration(), 0, 0);
+    sendProgress(packet, gate, delay, duration, cProgress::PACKET_END, datarate, packet->getBitLength(), duration, 0, 0);
 }
 
 void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, simtime_t duration, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
