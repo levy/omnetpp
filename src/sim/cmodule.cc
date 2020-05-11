@@ -1432,13 +1432,23 @@ bool cModule::initializeModules(int stage)
     }
 
     // then recursively initialize submodules
+    std::set<int> succeedModuleIds;
     bool moreStages = stage < numStages-1;
-    std::vector<cModule *> submodules;
-    for (SubmoduleIterator it(this); !it.end(); ++it)
-        submodules.push_back(*it);
-    for (auto submodule : submodules)
-        if (submodule->initializeModules(stage))
-            moreStages = true;
+    bool submoduleInitCalled = false;
+    do {
+        submoduleInitCalled = false;
+        for (SubmoduleIterator it(this); !it.end(); ) {
+            auto submodule = (*it);
+            ++it;
+            auto curModId = submodule->getId();
+            if (succeedModuleIds.find(curModId) == succeedModuleIds.end()) {
+                succeedModuleIds.insert(curModId);
+                submoduleInitCalled = true;
+                if (submodule->initializeModules(stage))
+                    moreStages = true;
+            }
+        }
+    } while(submoduleInitCalled);
 
     // a few more things to do when initialization is complete
     if (!moreStages) {
