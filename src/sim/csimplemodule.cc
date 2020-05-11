@@ -741,11 +741,7 @@ void cSimpleModule::sendProgress(cPacket *packet, cGate *gate, simtime_t delay, 
     progressMessage->setTimePosition(timePosition);
     progressMessage->setExtraProcessableBitLength(extraProcessableBitLength);
     progressMessage->setExtraProcessableDuration(extraProcessableDuration);
-    // TODO: sendDirect if wireless?!
-    if (gate == nullptr)
-        scheduleAt(simTime() + delay, progressMessage);
-    else
-        sendDelayed(progressMessage, delay, gate);
+    sendDelayed(progressMessage, delay, gate);
 }
 
 void cSimpleModule::receiveProgress(cPacket *packet, cGate *gate, int progressKind, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration)
