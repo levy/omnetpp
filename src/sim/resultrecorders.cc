@@ -106,6 +106,11 @@ Register_ResultRecorder2("histogram", HistogramRecorder,
         SIGNALTYPE_TO_NUMERIC_CONVERSIONS
         OPTIONALLY_TIMEWEIGHTED
 );
+Register_ResultRecorder2("multiHistogram", MultiHistogramRecorder,
+        "Records the histogram of the input values. "
+        SIGNALTYPE_TO_NUMERIC_CONVERSIONS
+        OPTIONALLY_TIMEWEIGHTED
+);
 Register_ResultRecorder2("timeWeightedHistogram", TimeWeightedHistogramRecorder,
         "Records the time-weighted histogram of the input values. "
         SIGNALTYPE_TO_NUMERIC_CONVERSIONS
@@ -452,6 +457,82 @@ std::string StatisticsRecorder::str() const
     return os.str();
 }
 
+//---
+
+MultiStatisticsRecorder::MultiStatisticsRecorder()
+{
+}
+
+MultiStatisticsRecorder::~MultiStatisticsRecorder()
+{
+    dropAndDelete(statisticTemplate);
+    for (auto& it : entries)
+        dropAndDelete(it.second.statistic);
+}
+
+void MultiStatisticsRecorder::forEachChild(cVisitor *v)
+{
+    for (auto& it : entries)
+        v->visit(it.second.statistic);
+    cNumericResultRecorder::forEachChild(v);
+}
+
+void MultiStatisticsRecorder::setStatisticTemplate(cStatistic *statTemplate)
+{
+    ASSERT(statisticTemplate == nullptr);
+    statisticTemplate = statTemplate;
+    take(statisticTemplate);
+}
+
+MultiStatisticsRecorder::Entry& MultiStatisticsRecorder::getEntry(const char *label)
+{
+    auto it = entries.find(label);
+    if (it == entries.end()) {
+        Entry entry;
+        entry.statistic = static_cast<cStatistic *>(statisticTemplate->dup());
+        take(entry.statistic);
+        return entries[label] = entry;
+    }
+    else
+        return it->second;
+}
+
+void MultiStatisticsRecorder::collect(simtime_t_cref t, double value, cObject *details)
+{
+    auto& entry = getEntry(check_and_cast<cNamedObject *>(details)->getName());
+    if (!entry.statistic->isWeighted()) {
+        if (!std::isnan(value))
+            entry.statistic->collect(value);
+    }
+    else {
+        if (!std::isnan(entry.lastValue))
+            entry.statistic->collectWeighted(entry.lastValue, t - entry.lastTime);
+        entry.lastTime = t;
+        entry.lastValue = value;
+    }
+}
+
+void MultiStatisticsRecorder::finish(cResultFilter *prev)
+{
+    for (auto it : entries) {
+        auto& entry = it.second;
+        if (entry.statistic->isWeighted() && !std::isnan(entry.lastValue))
+            entry.statistic->collectWeighted(entry.lastValue, simTime() - entry.lastTime);
+
+        opp_string_map attributes = getStatisticAttributes();
+        std::string name = getResultName();
+        name += "." + it.first;
+        getEnvir()->recordStatistic(getComponent(), name.c_str(), entry.statistic, &attributes);
+    }
+}
+
+std::string MultiStatisticsRecorder::str() const
+{
+    std::stringstream os;
+    os << getResultName() << ": " << getStatisticTemplate()->str();
+    return os.str();
+}
+
 inline bool getBoolAttr(const opp_string_map& attrs, const char *name, bool defaultValue)
 {
     auto it = attrs.find(name);
@@ -482,6 +563,19 @@ void HistogramRecorder::init(cComponent *component, const char *statsName, const
         setStatistic(new cHistogram("histogram", weighted));
     else
         setStatistic(new cHistogram("histogram", numBins, weighted));
+}
+
+void MultiHistogramRecorder::init(cComponent *component, const char *statsName, const char *recordingMode, cProperty *attrsProperty, opp_string_map *manualAttrs)
+{
+    MultiStatisticsRecorder::init(component, statsName, recordingMode, attrsProperty, manualAttrs);
+
+    omnetpp::opp_string_map attrs = getStatisticAttributes();
+    bool weighted = getBoolAttr(getStatisticAttributes(), "timeWeighted", false);
+    int numBins = getIntAttr(getStatisticAttributes(), "numBins", -1);
+    if (numBins == -1)
+        setStatisticTemplate(new cHistogram("histogram", weighted));
+    else
+        setStatisticTemplate(new cHistogram("histogram", numBins, weighted));
 }
 
 void TimeWeightedHistogramRecorder::init(cComponent *component, const char *statsName, const char *recordingMode, cProperty *attrsProperty, opp_string_map *manualAttrs)

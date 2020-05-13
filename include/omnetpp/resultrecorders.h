@@ -245,6 +245,29 @@ class SIM_API StatisticsRecorder : public cNumericResultRecorder
         virtual std::string str() const override;
 };
 
+class SIM_API MultiStatisticsRecorder : public cNumericResultRecorder
+{
+    protected:
+        cStatistic *statisticTemplate = nullptr;
+        struct Entry {
+            cStatistic *statistic = nullptr;
+            double lastValue = NAN;
+            simtime_t lastTime = SIMTIME_ZERO;
+        };
+        std::map<std::string, Entry> entries;
+    protected:
+        virtual void collect(simtime_t_cref t, double value, cObject *details) override;
+        virtual void finish(cResultFilter *prev) override;
+        virtual void forEachChild(cVisitor *v) override;
+        virtual Entry& getEntry(const char *label);
+    public:
+        MultiStatisticsRecorder();
+        ~MultiStatisticsRecorder();
+        virtual void setStatisticTemplate(cStatistic* stat);
+        virtual cStatistic *getStatisticTemplate() const {return statisticTemplate;}
+        virtual std::string str() const override;
+};
+
 class SIM_API StatsRecorder : public StatisticsRecorder
 {
     public:
@@ -252,6 +275,12 @@ class SIM_API StatsRecorder : public StatisticsRecorder
 };
 
 class SIM_API HistogramRecorder : public StatisticsRecorder
+{
+    public:
+        virtual void init(cComponent *component, const char *statisticName, const char *recordingMode, cProperty *attrsProperty, opp_string_map *manualAttrs) override;
+};
+
+class SIM_API MultiHistogramRecorder : public MultiStatisticsRecorder
 {
     public:
         virtual void init(cComponent *component, const char *statisticName, const char *recordingMode, cProperty *attrsProperty, opp_string_map *manualAttrs) override;
