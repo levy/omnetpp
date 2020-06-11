@@ -528,6 +528,8 @@ QString EventEntryMessageLinesProvider::getLineText(LogBuffer::Entry *entry, int
 {
     LogBuffer::MessageSend& messageSend = messageSendForLineIndex(entry, lineIndex);
     cMessage *msg = messageSend.msg;
+    if (!msg)
+        return "<nullptr>";
 
     QString eventNumber = QString::number(entry->eventNumber);
 
