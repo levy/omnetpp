@@ -664,10 +664,13 @@ class SIM_API cProgress : public cMessage
     void copy(const cProgress& orig);
 
   public:
-    cProgress(const char *name, int kind) : cMessage(name, kind) { }
+    cProgress(const char *name = nullptr, int kind = 0) : cMessage(name, kind) { }
     cProgress(const cProgress& orig) : cMessage(orig) { copy(orig); }
 
     virtual cProgress *dup() const override { return new cProgress(*this); }
+
+    virtual void parsimPack(cCommBuffer *buffer) const override;
+    virtual void parsimUnpack(cCommBuffer *buffer) override;
 
     cPacket *getPacket() const;
     cPacket *removePacket();

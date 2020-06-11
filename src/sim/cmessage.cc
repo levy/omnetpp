@@ -17,6 +17,7 @@
 
 #include <sstream>
 #include "omnetpp/globals.h"
+#include "omnetpp/checkandcast.h"
 #include "omnetpp/cmodule.h"
 #include "omnetpp/csimplemodule.h"
 #include "omnetpp/cmessage.h"
@@ -355,6 +356,8 @@ void cMessage::execute()
     throw new cRuntimeError("Illegal call to cMessage::execute()");
 }
 
+Register_Class(cProgress);
+
 void cProgress::copy(const cProgress& orig)
 {
     if (orig.packet) {
@@ -367,6 +370,29 @@ void cProgress::copy(const cProgress& orig)
     timePosition = orig.timePosition;
     extraProcessableBitLength = orig.extraProcessableBitLength;
     extraProcessableDuration = orig.extraProcessableDuration;
+}
+
+void cProgress::parsimPack(cCommBuffer *buffer) const
+{
+    cMessage::parsimPack(buffer);
+    buffer->packObject(packet);
+    buffer->pack(datarate);
+    buffer->pack(bitPosition);
+    buffer->pack(timePosition);
+    buffer->pack(extraProcessableBitLength);
+    buffer->pack(extraProcessableDuration);
+}
+
+void cProgress::parsimUnpack(cCommBuffer *buffer)
+{
+    cMessage::parsimUnpack(buffer);
+    packet = check_and_cast<cPacket *>(buffer->unpackObject());
+    take(packet);
+    buffer->unpack(datarate);
+    buffer->unpack(bitPosition);
+    buffer->unpack(timePosition);
+    buffer->unpack(extraProcessableBitLength);
+    buffer->unpack(extraProcessableDuration);
 }
 
 cPacket *cProgress::getPacket() const
