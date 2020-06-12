@@ -374,6 +374,9 @@ void cProgress::copy(const cProgress& orig)
 
 void cProgress::parsimPack(cCommBuffer *buffer) const
 {
+#ifndef WITH_PARSIM
+    throw cRuntimeError(this, E_NOPARSIM);
+#else
     cMessage::parsimPack(buffer);
     buffer->packObject(packet);
     buffer->pack(datarate);
@@ -381,10 +384,14 @@ void cProgress::parsimPack(cCommBuffer *buffer) const
     buffer->pack(timePosition);
     buffer->pack(extraProcessableBitLength);
     buffer->pack(extraProcessableDuration);
+#endif
 }
 
 void cProgress::parsimUnpack(cCommBuffer *buffer)
 {
+#ifndef WITH_PARSIM
+    throw cRuntimeError(this, E_NOPARSIM);
+#else
     cMessage::parsimUnpack(buffer);
     packet = check_and_cast<cPacket *>(buffer->unpackObject());
     take(packet);
@@ -393,6 +400,7 @@ void cProgress::parsimUnpack(cCommBuffer *buffer)
     buffer->unpack(timePosition);
     buffer->unpack(extraProcessableBitLength);
     buffer->unpack(extraProcessableDuration);
+#endif
 }
 
 cPacket *cProgress::getPacket() const
