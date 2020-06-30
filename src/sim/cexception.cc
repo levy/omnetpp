@@ -254,9 +254,11 @@ cRuntimeError::cRuntimeError(const cObject *where, const char *msgformat...)
     notifyEnvir();
 }
 
+bool cRuntimeError::signalErrors = true;
+
 void cRuntimeError::notifyEnvir()
 {
-    if (getEnvir()->debugOnErrors && getEnvir()->ensureDebugger(this))
+    if (signalErrors && getEnvir()->debugOnErrors && getEnvir()->ensureDebugger(this))
         DEBUG_TRAP; // YOUR CODE IS A FEW FRAMES UP ON THE CALL STACK
 }
 

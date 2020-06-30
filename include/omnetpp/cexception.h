@@ -283,6 +283,8 @@ class SIM_API cTerminationException : public cException
 class SIM_API cRuntimeError : public cException
 {
   public:
+    static bool signalErrors;
+
     // internal
     bool displayed = false;
   protected:
