@@ -854,7 +854,7 @@ void TextViewerWidget::resizeEvent(QResizeEvent *event)
 
 void TextViewerWidget::paintEvent(QPaintEvent *event)
 {
-    if (contentChangedFlag)
+//    if (contentChangedFlag)
         handleContentChange();
 
     QPainter painter(viewport());
