@@ -482,7 +482,8 @@ bool cGate::deliver(cMessage *msg, simtime_t t)
         return true;
     }
     else if (!channel) {
-        EVCB.messageSendHop(msg, this);
+        simtime_t duration = msg->isPacket() ? static_cast<cPacket *>(msg)->getDuration() : 0;
+        EVCB.messageSendHop(msg, this, 0, duration, false);
         return nextGate->deliver(msg, t);
     }
     else {
